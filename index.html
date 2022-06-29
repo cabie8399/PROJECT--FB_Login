@@ -4,48 +4,44 @@
 
 <script>
 window.fbAsyncInit = function() {
-FB.init({
-    appId      : '298317939096962',
-    xfbml      : true,
-    version    : 'v14.0'
-});
-FB.AppEvents.logPageView();
+    FB.init({
+        appId      : '298317939096962',
+        xfbml      : true,
+        version    : 'v14.0'
+    });
+    FB.AppEvents.logPageView();
 };
 
 // 處理各種登入身份
 function statusChangeCallback(response) {
-console.log(response);
-var target = document.getElementById("FB_STATUS_1"),
-html = "";
+    console.log(response);
+    var target = document.getElementById("FB_STATUS_1"),
+    html = "";
 
-// 登入 FB 且已加入會員
-if (response.status === 'connected') {
-html = "已登入 FB，並加入 友廷等公車應用程式<br/>";
+    // 登入 FB 且已加入會員
+    if (response.status === 'connected') {
+        html = "已登入 FB，並加入 友廷等公車應用程式<br/>";
 
-FB.api('/me?fields=id,name,email', function(response) {
-console.log(response);
-html += "會員暱稱：" + response.name + "<br/>";
-html += "會員 email：" + response.email+ "<br/>";
-html += "會員 uid :" + response.id;
-target.innerHTML = html;
-});
-}
-
-// 登入 FB, 未偵測到加入會員
-else if (response.status === "not_authorized") {
-target.innerHTML = "已登入 FB，但未加入 友廷等公車應用程式 應用程式";
-}
-
-// 未登入 FB
-else {
-target.innerHTML = "未登入 FB";
-}
+        FB.api('/me?fields=id,name,email', function(response) {
+            console.log(response);
+            html += "會員暱稱：" + response.name + "<br/>";
+            html += "會員 email：" + response.email+ "<br/>";
+            html += "會員 uid :" + response.id;
+            target.innerHTML = html;
+        });
+    } else if (response.status === "not_authorized") {
+        // 登入 FB, 未偵測到加入會員
+        target.innerHTML = "已登入 FB，但未加入 友廷等公車應用程式 應用程式";
+    } else {
+        // 未登入 FB
+        target.innerHTML = "未登入 FB";
+    }
 }
 
 function checkLoginState() {
-FB.getLoginStatus(function(response) {
-statusChangeCallback(response);
-});
+    FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+    });
 }
 
 // 載入 FB SDK
