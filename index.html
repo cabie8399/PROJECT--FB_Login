@@ -20,24 +20,42 @@
         
 
         // Load the Facebook Javascript SDK asynchronously
-        (function (d, s, id) {
+        // (function (d, s, id) {
+        //     var js, fjs = d.getElementsByTagName(s)[0];
+        //     if (d.getElementById(id)) return;
+        //     js = d.createElement(s); js.id = id;
+        //     js.src = "https://connect.facebook.net/en_US/sdk.js";
+        //     fjs.parentNode.insertBefore(js, fjs);
+        // }(document, 'script', 'facebook-jssdk'));
+
+        // window.fbAsyncInit = function () {
+        //     FB.init({
+        //         appId: '298317939096962',//FB appID
+        //         cookie: true,  // enable cookies to allow the server to access the session
+        //         xfbml: true,  // parse social plugins on this page
+        //         version: 'v4.0' // use graph api version
+        //     });
+        //     FB.AppEvents.logPageView();
+
+        // };
+        
+        // 直接複製最新FB幫我產生的code
+        window.fbAsyncInit = function() {
+            FB.init({
+            appId      : '298317939096962',
+            xfbml      : true,
+            version    : 'v14.0'
+            });
+            FB.AppEvents.logPageView();
+        };
+
+        (function(d, s, id){
             var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
+            if (d.getElementById(id)) {return;}
             js = d.createElement(s); js.id = id;
             js.src = "https://connect.facebook.net/en_US/sdk.js";
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
-
-        window.fbAsyncInit = function () {
-            FB.init({
-                appId: '298317939096962',//FB appID
-                cookie: true,  // enable cookies to allow the server to access the session
-                xfbml: true,  // parse social plugins on this page
-                version: 'v4.0' // use graph api version
-            });
-            FB.AppEvents.logPageView();
-
-        };
 
         //使用自己客製化的按鈕來登入
         function FBLogin() {
