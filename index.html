@@ -1,150 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-</head>
-<body>
-    <div>
-        Facebook登入並取得用戶姓名、email：<input type="button" value="Facebook登入" onclick="FBLogin();" />
-    </div>
-    <div>
-        <!--留意用戶的此頁，你的App會被移除：https://www.facebook.com/settings?tab=applications-->
-        用戶刪除授權的App(撤銷登入)：<input type="button" value="Disconnect App" onclick="Del_FB_App()" />
-    </div>
-    <!--顯示用戶的姓名、email↓-->
-    <div id="content"></div>
-    <script type="text/javascript">
-        //應用程式編號，進入 https://developers.facebook.com/apps/ 即可看到
-        let FB_appID = "298317939096962";
+<fb:login-button scope="public_profile,email" autologoutlink="true" onlogin="checkLoginState();"></fb:login-button>
 
-        
+目前狀態：<span id="FB_STATUS_1"></span>
 
-        // Load the Facebook Javascript SDK asynchronously
-        // (function (d, s, id) {
-        //     var js, fjs = d.getElementsByTagName(s)[0];
-        //     if (d.getElementById(id)) return;
-        //     js = d.createElement(s); js.id = id;
-        //     js.src = "https://connect.facebook.net/en_US/sdk.js";
-        //     fjs.parentNode.insertBefore(js, fjs);
-        // }(document, 'script', 'facebook-jssdk'));
+<script>
+window.fbAsyncInit = function() {
+FB.init({
+    appId      : '298317939096962',
+    xfbml      : true,
+    version    : 'v14.0'
+});
+FB.AppEvents.logPageView();
+};
 
-        // window.fbAsyncInit = function () {
-        //     FB.init({
-        //         appId: '298317939096962',//FB appID
-        //         cookie: true,  // enable cookies to allow the server to access the session
-        //         xfbml: true,  // parse social plugins on this page
-        //         version: 'v4.0' // use graph api version
-        //     });
-        //     FB.AppEvents.logPageView();
+(function(d, s, id){
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {return;}
+    js = d.createElement(s); js.id = id;
+    js.src = "https://connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
 
-        // };
-        
-        // 直接複製最新FB幫我產生的code
-        window.fbAsyncInit = function() {
-            FB.init({
-            appId      : '298317939096962',
-            xfbml      : true,
-            version    : 'v14.0'
-            });
-            FB.AppEvents.logPageView();
-        };
+// 處理各種登入身份
+function statusChangeCallback(response) {
+console.log(response);
+var target = document.getElementById("FB_STATUS_1"),
+html = "";
 
-        (function(d, s, id){
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) {return;}
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
+// 登入 FB 且已加入會員
+if (response.status === 'connected') {
+html = "已登入 FB，並加入 友廷等公車應用程式<br/>";
 
-        //使用自己客製化的按鈕來登入
-        function FBLogin() {
-            FB.getLoginStatus(function (res) {
-                console.log(`status:${res.status}`);//Debug
+FB.api('/me?fields=id,name,email', function(response) {
+console.log(response);
+html += "會員暱稱：" + response.name + "<br/>";
+html += "會員 email：" + response.email+ "<br/>";
+html += "會員 uid :" + response.id;
+target.innerHTML = html;
+});
+}
 
-                if (res.status === "connected") { 
-                    let userID = res["authResponse"]["userID"];
-                    console.log("用戶已授權您的App，用戶須先revoke撤除App後才能再重新授權你的App");
-                    console.log(`已授權App登入FB 的 userID:${userID}`);
-                    GetProfile();
-                } else if (res.status === 'not_authorized' || res.status === "unknown") {
-                    //App未授權或用戶登出FB網站才讓用戶執行登入動作
-                    FB.login(function (response) {
+// 登入 FB, 未偵測到加入會員
+else if (response.status === "not_authorized") {
+target.innerHTML = "已登入 FB，但未加入 友廷等公車應用程式 應用程式";
+}
 
-                        //console.log(response); //debug用
-                        if (response.status === 'connected') {
-                            //user已登入FB
-                            //抓userID
-                            let userID = response["authResponse"]["userID"];
-                            console.log(`已授權App登入FB 的 userID:${userID}`);
-                            GetProfile();
+// 未登入 FB
+else {
+target.innerHTML = "未登入 FB";
+}
+}
 
-                        } else {
-                            // user FB取消授權
-                            alert("Facebook帳號無法登入");
-                        }
-                        //"public_profile"可省略，仍然可以取得name、userID
-                    }, { scope: 'email' }); 
-                }
-            });
+function checkLoginState() {
+FB.getLoginStatus(function(response) {
+statusChangeCallback(response);
+});
+}
 
-
-        }
-    </script>
-    <script type="text/javascript">
-        //取得用戶姓名、email
-        function GetProfile() {
-            document.getElementById('content').innerHTML = "";//先清空顯示結果
-
-            //FB.api()使用說明：https://developers.facebook.com/docs/javascript/reference/FB.api
-            //取得用戶個資
-            FB.api("/me", "GET", { fields: 'last_name,first_name,name,email' }, function (user) {
-                //user物件的欄位：https://developers.facebook.com/docs/graph-api/reference/user
-                if (user.error) {
-                    console.log(response);
-                } else {
-                    
-                    document.getElementById('content').innerHTML = JSON.stringify(user);
-                }
-            });
-
-        }
-    </script>
-
-
-
-
-    <!--有些網站會做帳號和user FB帳號的綁定/解除綁定，或你想讓使用者刪除你的FB App，讓使用者下次可以切換不同FB帳號登入你的網站-->
-    <!--下面程式碼派得上用場-->
-    <script type="text/javascript">
-
-        //刪除使用者已授權你的FB App，好讓使用者下次重新授權你的FB App
-        //參考：https://stackoverflow.com/questions/6634212/remove-the-application-from-a-user-using-graph-api/7741978#7741978
-        //https://stackoverflow.com/questions/9050190/facebook-api-sdk-revoke-access
-        function Del_FB_App() {
-
-            FB.getLoginStatus(function (response) {//取得目前user是否登入FB網站
-                //debug用
-                console.log(response);
-                if (response.status === 'connected') {
-                    //抓userID
-                    //let userID = response["authResponse"]["userID"];
-
-
-                    FB.api("/me/permissions", "DELETE", function (response) {
-                        console.log("刪除結果");
-                        console.log(response); //gives true on app delete success
-                        //最後一個參數傳遞true避免cache
-                        FB.getLoginStatus(function (res) { }, true);//強制刷新cache避免login status下次誤判
-                        
-                    });
-
-                } else { 
-                    console.log("無法刪除FB App");
-                }
-            });
-             
-        } 
-    </script> 
-</body>
-</html>
+// 載入 FB SDK
+(function(d, s, id) {
+var js, fjs = d.getElementsByTagName(s)[0];
+if (d.getElementById(id)) return;
+js = d.createElement(s);
+js.id = id;
+js.src = "https://connect.facebook.net/zh_TW/sdk.js";
+fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+</script>
